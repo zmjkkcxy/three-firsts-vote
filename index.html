@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>三个「第一」,谁是第一?· 课堂投票</title>
+<script src="config.js"></script>
+<style>
+:root{
+  --seu-green:#0b3d2e;
+  --seu-green-2:#145a44;
+  --seu-gold:#d4a017;
+  --seu-gold-soft:#f0c75e;
+  --card:#fdf8ec;
+  --ink:#1c2b25;
+  --muted:#6b7a74;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(212,160,23,.18), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(255,255,255,.06), transparent 55%),
+    linear-gradient(160deg,#0b3d2e 0%,#0e4a37 55%,#145a44 100%);
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  overflow-x:hidden;
+}
+.wrap{
+  width:100%;
+  max-width:520px;
+  padding:24px 20px 40px;
+  display:flex;
+  flex-direction:column;
+  flex:1;
+}
+/* 顶栏 */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  letter-spacing:2px;
+  color:rgba(255,255,255,.75);
+  border-bottom:1px solid rgba(255,255,255,.15);
+  padding-bottom:12px;
+}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--seu-gold);flex:none}
+.topbar .flag{margin-left:auto;font-size:11px;color:var(--seu-gold-soft);letter-spacing:1px}
+/* 标题 */
+.hero{margin:28px 0 6px;text-align:left}
+.hero .eyebrow{
+  font-size:13px;color:var(--seu-gold-soft);letter-spacing:3px;
+  margin-bottom:10px;
+}
+.hero h1{
+  font-size:34px;line-height:1.25;font-weight:700;
+  letter-spacing:1px;
+}
+.hero h1 em{font-style:normal;color:var(--seu-gold)}
+.hero .sub{
+  margin-top:10px;font-size:14px;color:rgba(255,255,255,.82);
+  letter-spacing:4px;
+}
+/* 问题卡 */
+.question{
+  margin-top:22px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  padding:18px 18px;
+  backdrop-filter:blur(4px);
+}
+.question .q-label{
+  font-size:12px;color:var(--seu-gold-soft);letter-spacing:2px;margin-bottom:8px;
+}
+.question .q-text{
+  font-size:20px;line-height:1.5;font-weight:600;
+}
+.question .q-hint{
+  margin-top:8px;font-size:12px;color:rgba(255,255,255,.6);
+}
+/* 三个选项 */
+.options{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.opt{
+  background:var(--card);
+  color:var(--ink);
+  border-radius:18px;
+  padding:16px 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:transform .12s ease, border-color .2s ease, box-shadow .2s ease;
+  user-select:none;
+}
+.opt:active{transform:scale(.985)}
+.opt .icon{
+  width:52px;height:52px;flex:none;
+  border-radius:14px;
+  background:linear-gradient(145deg,#145a44,#0b3d2e);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+}
+.opt .meta{flex:1;min-width:0}
+.opt .name{font-size:20px;font-weight:700}
+.opt .tag{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+.opt.selected{
+  border-color:var(--seu-gold);
+  box-shadow:0 6px 22px rgba(212,160,23,.35);
+}
+/* 反方观点(拆台) */
+.retort{
+  margin-top:14px;
+  display:none;
+  background:linear-gradient(135deg,#5a1f1f,#7a2d2d);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:16px;
+  padding:16px 18px;
+}
+.retort.show{display:block;animation:pop .25s ease}
+.retort .r-label{
+  font-size:12px;letter-spacing:2px;color:rgba(255,255,255,.85);
+  display:flex;align-items:center;gap:6px;margin-bottom:8px;
+}
+.retort .r-label .ln{flex:1;height:1px;background:rgba(255,255,255,.25)}
+.retort .r-text{font-size:15px;line-height:1.7;color:#ffe9e9}
+.retort .r-quote{
+  margin-top:10px;font-size:12px;color:rgba(255,255,255,.7);
+  border-left:3px solid var(--seu-gold);padding-left:10px;
+}
+/* 确认按钮 */
+.confirm{
+  margin-top:16px;
+  display:none;
+  width:100%;
+  padding:16px;
+  border:none;border-radius:16px;
+  background:linear-gradient(135deg,#d4a017,#b8860b);
+  color:#fff;font-size:17px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(212,160,23,.35);
+}
+.confirm.show{display:block;animation:pop .25s ease}
+.confirm:active{transform:scale(.98)}
+/* 成功态 */
+.success{
+  display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  flex:1;
+  padding:30px 0;
+}
+.success.show{display:flex;animation:fade .4s ease}
+.success .check{
+  width:92px;height:92px;border-radius:50%;
+  background:linear-gradient(145deg,#d4a017,#b8860b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:46px;
+  box-shadow:0 10px 40px rgba(212,160,23,.4);
+  animation:pop .4s cubic-bezier(.2,1.6,.4,1);
+}
+.success h2{margin-top:24px;font-size:26px}
+.success .choice{
+  margin-top:10px;font-size:16px;color:rgba(255,255,255,.9);
+}
+.success .hint{
+  margin-top:24px;font-size:14px;line-height:1.8;color:var(--seu-gold-soft);
+  max-width:340px;
+}
+.success .hint b{color:#fff}
+/* 底部 */
+.foot{
+  margin-top:auto;padding-top:24px;
+  font-size:11px;color:rgba(255,255,255,.5);
+  text-align:center;line-height:1.8;
+}
+.mode-badge{
+  display:inline-block;padding:3px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.25);font-size:11px;
+  letter-spacing:1px;margin-top:8px;
+}
+@keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes fade{0%{opacity:0}100%{opacity:1}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="topbar">
+    <span class="dot"></span>
+    <span>课堂研讨互动 · 请投票</span>
+    <span class="flag">SEU · 经典篇目研读</span>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">— 开场互动 · 30 秒 —</div>
+    <h1>三个「<em>第一</em>」,<br>谁是第一?</h1>
+    <div class="sub">教育 · 科技 · 人才</div>
+  </div>
+
+  <!-- 投票区 -->
+  <div id="voteArea">
+    <div class="question">
+      <div class="q-label">假想题</div>
+      <div class="q-text">如果国家只能优先投一项——<br>你投哪个?</div>
+      <div class="q-hint">凭第一直觉,别想太久。你的答案会实时出现在大屏上。</div>
+    </div>
+    <div class="options" id="options"></div>
+    <div class="retort" id="retort"></div>
+    <button class="confirm" id="confirmBtn">确认,就选它 →</button>
+  </div>
+
+  <!-- 成功态 -->
+  <div class="success" id="success">
+    <div class="check">✓</div>
+    <h2>投票成功</h2>
+    <div class="choice" id="successChoice"></div>
+    <div class="hint" id="successHint"></div>
+    <div class="mode-badge" id="modeBadge"></div>
+  </div>
+
+  <div class="foot">
+    本活动 · 东南大学「教育、科技、人才三位一体」研读汇报<br>
+    答案,稍后揭晓——请看大屏
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CFG = window.VOTE_CONFIG;
+const OPTIONS = [
+  { id:'edu',    name:'教育', icon:'🌱', tag:'十年树木 · 百年树人',
+    retort:'<span style="font-weight:700">教育见效太慢</span>——今天的投入,十年后才有人才。可眼前的芯片、光刻机,等不了十年。<br>“十年树木,百年树人”——你投的是 30 年后的可能性。',
+    quote:'教育是国之大计、党之大计' },
+  { id:'tech',   name:'科技', icon:'⚡', tag:'此刻攻坚 · 突破卡脖子',
+    retort:'<span style="font-weight:700">技术不会自己长出来</span>。没有人才,谁来做突破?没有教育,人才从哪来?你把钱全给机器,机器不会思考。<br>“基础研究是整个科学体系的源头”——源头不在你这一票里。',
+    quote:'科技是第一生产力' },
+  { id:'talent', name:'人才', icon:'🧭', tag:'能动变量 · 创造者',
+    retort:'<span style="font-weight:700">巧妇难为无米之炊</span>。没有教育的底座,人才只是存量;没有科技的战场,人才没有用武之地。<br>你投的是“现在”,不是“未来”。',
+    quote:'人才是第一资源' }
+];
+
+const app = document.getElementById('app');
+const voteArea = document.getElementById('voteArea');
+const optionsEl = document.getElementById('options');
+const retortEl = document.getElementById('retort');
+const confirmBtn = document.getElementById('confirmBtn');
+const success = document.getElementById('success');
+const successChoice = document.getElementById('successChoice');
+const successHint = document.getElementById('successHint');
+const modeBadge = document.getElementById('modeBadge');
+
+let selected = null;
+let submitted = false;
+let client = null;
+let liveMode = false;
+
+/* ---------- 初始化:判断模式 ---------- */
+async function init() {
+  const hasKey = CFG.supabaseUrl && CFG.supabaseAnonKey;
+  const needLive = CFG.mode === 'live' || (CFG.mode === 'auto' && hasKey);
+  if (needLive && hasKey) {
+    try {
+      client = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { db: { schema: 'api' } });
+      // 探活:查一次表,失败抛错(必须检查 error,不能只 await)
+      const { error: probeErr } = await client.from(CFG.table).select('id').limit(1);
+      if (probeErr) throw probeErr;
+      liveMode = true;
+    } catch (e) {
+      console.warn('[vote] live init failed, fallback demo:', e);
+      liveMode = false;
+    }
+  }
+  modeBadge.textContent = liveMode ? '实时模式 · 数据同步中' : '演示模式 · 模拟数据';
+  renderOptions();
+  // 已投过(本地)直接显示成功态
+  const last = localStorage.getItem('threeFirsts.vote');
+  if (last) {
+    submitted = true;
+    showSuccess(last, true);
+  }
+}
+
+/* ---------- 渲染选项 ---------- */
+function renderOptions() {
+  optionsEl.innerHTML = '';
+  OPTIONS.forEach(o => {
+    const el = document.createElement('div');
+    el.className = 'opt';
+    el.dataset.id = o.id;
+    el.innerHTML = `
+      <div class="icon">${o.icon}</div>
+      <div class="meta">
+        <div class="name">${o.name}</div>
+        <div class="tag">${o.tag}</div>
+      </div>`;
+    el.addEventListener('click', () => select(o.id, el));
+    optionsEl.appendChild(el);
+  });
+}
+
+/* ---------- 选择 ---------- */
+function select(id, el) {
+  if (submitted) return;
+  selected = id;
+  optionsEl.querySelectorAll('.opt').forEach(n => n.classList.toggle('selected', n === el));
+  const o = OPTIONS.find(x => x.id === id);
+  retortEl.innerHTML = `
+    <div class="r-label">反方观点 · 再想想?<span class="ln"></span></div>
+    <div class="r-text">${o.retort}</div>
+    <div class="r-quote">“${o.quote}”</div>`;
+  retortEl.classList.add('show');
+  confirmBtn.classList.add('show');
+  confirmBtn.textContent = '确认,就选「' + o.name + '」→';
+  confirmBtn.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+/* ---------- 提交 ---------- */
+confirmBtn.addEventListener('click', async () => {
+  if (!selected || submitted) return;
+  submitted = true;
+  const o = OPTIONS.find(x => x.id === selected);
+  try {
+    if (liveMode && client) {
+      await client.from(CFG.table).insert({ choice: selected });
+    }
+  } catch (e) { console.warn('[vote] insert failed:', e); }
+  localStorage.setItem('threeFirsts.vote', selected);
+  showSuccess(selected, false);
+});
+
+function showSuccess(id, fromCache) {
+  const o = OPTIONS.find(x => x.id === id);
+  voteArea.style.display = 'none';
+  successChoice.textContent = '你的选择:' + o.icon + ' ' + o.name;
+  successHint.innerHTML = fromCache
+    ? '你已经投过票了。<br>答案即将揭晓——<b>请看大屏</b>。'
+    : '你的答案已送出。<br>现在,<b>抬头看大屏</b>——<br>看看全场和你选了同一项的人有多少。';
+  success.classList.add('show');
+}
+
+init();
+</script>
+</body>
+</html>
