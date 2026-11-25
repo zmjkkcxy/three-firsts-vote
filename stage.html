@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>三个「第一」,谁是第一?· 大屏结果</title>
 <script src="config.js"></script>
+<script src="qrcode.min.js"></script>
 <style>
 :root{
   --seu-green:#0b3d2e;
@@ -44,6 +45,13 @@ body{
 }
 .topbar .status.voting{background:rgba(212,160,23,.25);border-color:var(--seu-gold);color:var(--seu-gold-soft)}
 .topbar .status.idle{color:rgba(255,255,255,.7)}
+/* 二维码 */
+.qr-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  margin-left:26px;flex:none;
+}
+.qr-wrap .qr-label{font-size:12px;color:var(--seu-gold-soft);letter-spacing:2px}
+#qrBox canvas,#qrBox img{border-radius:8px;background:#fff}
 /* ===== 中部:柱状图 ===== */
 .main{
   flex:1;display:flex;flex-direction:column;
@@ -185,6 +193,10 @@ body{
 <div class="topbar">
   <span class="dot"></span>
   <h1>三个「<em>第一</em>」,谁是第一?</h1>
+  <div class="qr-wrap" id="qrWrap" style="display:none">
+    <div id="qrBox"></div>
+    <div class="qr-label">扫码投票</div>
+  </div>
   <div class="status idle" id="status">等待开始</div>
 </div>
 
@@ -435,15 +447,22 @@ function resetAll() {
 function resetCounts() { state.counts = {edu:0,tech:0,talent:0}; state.total = 0; }
 function setStatus(txt, cls) { const s=$('status'); s.textContent=txt; s.className='status ' + (cls||'idle'); }
 
-/* ---------- 二维码(部署后可用) ---------- */
+/* ---------- 二维码(部署后显示) ---------- */
 function renderQR() {
-  const note = $('qrNote');
   const host = location.hostname;
-  if (host && host !== 'file') {
-    // 部署到 GitHub Pages 后,这里显示可扫码的投票链接
-    note.textContent = '扫码投票: ' + location.origin + location.pathname.replace(/stage\.html$/, 'index.html');
+  if (!host || host === 'file') {
+    $('qrNote').textContent = '本地预览模式 · 部署后可扫码';
+    return;
+  }
+  const url = location.origin + location.pathname.replace(/stage\.html$/, 'index.html');
+  $('qrNote').textContent = '';
+  if (window.QRCode) {
+    $('qrWrap').style.display = 'flex';
+    const box = $('qrBox');
+    box.innerHTML = '';
+    new QRCode(box, { text: url, width: 96, height: 96, colorDark: '#0b3d2e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
   } else {
-    note.textContent = '本地预览模式 · 部署后可扫码';
+    $('qrNote').textContent = '扫码投票: ' + url;
   }
 }
 
