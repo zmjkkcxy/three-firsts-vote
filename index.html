@@ -338,9 +338,13 @@ function showSuccess(id, fromCache) {
   const o = OPTIONS.find(x => x.id === id);
   voteArea.style.display = 'none';
   successChoice.textContent = '你的选择:' + o.icon + ' ' + o.name;
-  successHint.innerHTML = fromCache
-    ? '你已经投过票了。<br>答案即将揭晓——<b>请看大屏</b>。'
-    : '你的答案已送出。<br>现在,<b>抬头看大屏</b>——<br>看看全场和你选了同一项的人有多少。';
+  if (fromCache) {
+    successHint.innerHTML = '你已经投过票了。<br>答案即将揭晓——<b>请看大屏</b>。';
+  } else if (liveMode) {
+    successHint.innerHTML = '你的答案已送出。<br>现在,<b>抬头看大屏</b>——<br>看看全场和你选了同一项的人有多少。';
+  } else {
+    successHint.innerHTML = '<b>演示模式</b>:选择已记录。<br>大屏正在播放<b>模拟投票</b>——<br>现场请以<b>举手投票</b>为准。';
+  }
   success.classList.add('show');
 }
 
