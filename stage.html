@@ -357,6 +357,8 @@ function startVoting() {
   } else {
     // 演示模式:模拟观众陆续投票(带直觉倾向,科技最多→人才→教育)
     startDemoSim();
+    // 明确提示:演示模式下大屏数据是模拟的
+    $('qrNote').textContent = '演示模式 · 模拟数据,现场以举手为准';
   }
   startCountdown();
 }
