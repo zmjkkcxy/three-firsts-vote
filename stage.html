@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三个「第一」,谁是第一?· 大屏结果</title>
+<script src="config.js"></script>
+<style>
+:root{
+  --seu-green:#0b3d2e;
+  --seu-green-2:#145a44;
+  --seu-gold:#d4a017;
+  --seu-gold-soft:#f0c75e;
+  --card:#fdf8ec;
+  --ink:#1c2b25;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  background:
+    radial-gradient(1400px 700px at 90% -10%, rgba(212,160,23,.16), transparent 55%),
+    radial-gradient(1000px 700px at -10% 110%, rgba(255,255,255,.05), transparent 55%),
+    linear-gradient(160deg,#0b3d2e 0%,#0e4a37 55%,#145a44 100%);
+  color:#fff;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+/* ===== 顶栏 ===== */
+.topbar{
+  display:flex;align-items:center;gap:14px;
+  padding:20px 40px 12px;
+}
+.topbar .dot{width:10px;height:10px;border-radius:50%;background:var(--seu-gold);flex:none}
+.topbar h1{font-size:30px;font-weight:700;letter-spacing:2px}
+.topbar h1 em{font-style:normal;color:var(--seu-gold)}
+.topbar .status{
+  margin-left:auto;
+  font-size:14px;letter-spacing:2px;
+  padding:8px 18px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.08);
+}
+.topbar .status.voting{background:rgba(212,160,23,.25);border-color:var(--seu-gold);color:var(--seu-gold-soft)}
+.topbar .status.idle{color:rgba(255,255,255,.7)}
+/* ===== 中部:柱状图 ===== */
+.main{
+  flex:1;display:flex;flex-direction:column;
+  padding:20px 60px 30px;
+}
+.chart{
+  flex:1;display:flex;align-items:stretch;justify-content:center;gap:64px;
+  padding:10px 0;
+}
+.col{
+  flex:1;max-width:280px;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-end;
+}
+.col .num{
+  font-size:56px;font-weight:800;letter-spacing:1px;
+  font-variant-numeric:tabular-nums;
+  margin-bottom:6px;
+}
+.col .pct{
+  font-size:18px;color:rgba(255,255,255,.75);margin-bottom:14px;
+  font-variant-numeric:tabular-nums;
+}
+.col .bar-wrap{
+  width:100%;height:300px;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(255,255,255,.04);
+  border-radius:16px 16px 0 0;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  border-bottom:none;
+}
+.col .bar{
+  width:100%;
+  height:0%;
+  transition:height .45s cubic-bezier(.25,.8,.3,1);
+  border-radius:14px 14px 0 0;
+}
+.col .bar.edu{background:linear-gradient(180deg,#f0c75e,#c9971b)}
+.col .bar.tech{background:linear-gradient(180deg,#5fd0a8,#2e8b6c)}
+.col .bar.talent{background:linear-gradient(180deg,#8ab0e8,#4a6fb0)}
+.col .label{
+  margin-top:18px;
+  display:flex;align-items:center;gap:10px;
+  font-size:24px;font-weight:700;letter-spacing:2px;
+}
+.col .label .i{font-size:28px}
+.col .hint{font-size:12px;color:rgba(255,255,255,.5);margin-top:6px}
+/* 倒计时 */
+.timer-row{
+  display:flex;align-items:center;gap:14px;
+  margin-top:10px;
+}
+.timer-row .time{
+  font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;
+  color:var(--seu-gold-soft);min-width:64px;
+}
+.timer-row .track{
+  flex:1;height:8px;border-radius:999px;
+  background:rgba(255,255,255,.15);overflow:hidden;
+}
+.timer-row .fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,#d4a017,#f0c75e);
+  transition:width 1s linear;
+}
+.timer-row .qrcode-note{font-size:13px;color:rgba(255,255,255,.6);letter-spacing:1px}
+/* ===== 控制栏 ===== */
+.controls{
+  display:flex;gap:12px;justify-content:center;
+  padding:14px 40px 24px;
+  flex-wrap:wrap;
+}
+.controls button{
+  padding:12px 26px;border:none;border-radius:12px;
+  font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;
+  transition:transform .1s ease, opacity .2s;
+}
+.controls button:active{transform:scale(.96)}
+.controls button.primary{background:linear-gradient(135deg,#d4a017,#b8860b);color:#fff}
+.controls button.ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.controls button.danger{background:linear-gradient(135deg,#a0522d,#7a3420);color:#fff}
+.controls button:disabled{opacity:.4;cursor:not-allowed}
+.mode-badge{
+  align-self:center;padding:6px 18px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.25);
+  font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.75);
+  background:rgba(0,0,0,.15);
+}
+/* ===== 揭晓层 ===== */
+.reveal{
+  position:fixed;inset:0;z-index:50;
+  background:linear-gradient(160deg,#0b3d2e 0%,#0e4a37 55%,#145a44 100%);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px;
+}
+.reveal.show{display:flex}
+.reveal .stage{display:none;max-width:900px;width:100%}
+.reveal .stage.on{display:block;animation:fadeUp .5s ease}
+.reveal .big{
+  font-size:64px;font-weight:800;letter-spacing:2px;line-height:1.3;
+}
+.reveal .mid{
+  font-size:34px;font-weight:700;line-height:1.5;letter-spacing:1px;
+}
+.reveal .small{font-size:20px;color:rgba(255,255,255,.8);line-height:1.8;margin-top:14px}
+.reveal .gold{color:var(--seu-gold)}
+.reveal .dist{
+  display:flex;gap:24px;justify-content:center;margin-top:28px;flex-wrap:wrap;
+}
+.reveal .dist .pill{
+  padding:16px 26px;border-radius:16px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+}
+.reveal .dist .pill .n{font-size:34px;font-weight:800}
+.reveal .dist .pill .l{font-size:15px;color:rgba(255,255,255,.7);margin-top:4px}
+.reveal .retorts{
+  margin-top:26px;display:flex;flex-direction:column;gap:14px;
+}
+.reveal .retort{
+  background:rgba(90,31,31,.9);border:1px solid rgba(255,255,255,.2);
+  border-radius:14px;padding:14px 22px;font-size:19px;line-height:1.6;
+  animation:fadeUp .4s ease both;
+}
+.reveal .concl{
+  margin-top:24px;padding:22px 30px;border-radius:18px;
+  background:rgba(212,160,23,.18);border:1px solid var(--seu-gold);
+}
+.reveal .concl .src{
+  margin-top:10px;font-size:14px;color:rgba(255,255,255,.7);
+  border-top:1px dashed rgba(255,255,255,.3);padding-top:10px;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.pulse{animation:pulse 1.6s ease infinite}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="dot"></span>
+  <h1>三个「<em>第一</em>」,谁是第一?</h1>
+  <div class="status idle" id="status">等待开始</div>
+</div>
+
+<div class="main">
+  <div class="chart">
+    <div class="col">
+      <div class="num" id="num-edu">0</div>
+      <div class="pct" id="pct-edu">0%</div>
+      <div class="bar-wrap"><div class="bar edu" id="bar-edu"></div></div>
+      <div class="label"><span class="i">🌱</span>教育</div>
+      <div class="hint">十年树木 · 百年树人</div>
+    </div>
+    <div class="col">
+      <div class="num" id="num-tech">0</div>
+      <div class="pct" id="pct-tech">0%</div>
+      <div class="bar-wrap"><div class="bar tech" id="bar-tech"></div></div>
+      <div class="label"><span class="i">⚡</span>科技</div>
+      <div class="hint">此刻攻坚 · 卡脖子</div>
+    </div>
+    <div class="col">
+      <div class="num" id="num-talent">0</div>
+      <div class="pct" id="pct-talent">0%</div>
+      <div class="bar-wrap"><div class="bar talent" id="bar-talent"></div></div>
+      <div class="label"><span class="i">🧭</span>人才</div>
+      <div class="hint">能动变量 · 创造者</div>
+    </div>
+  </div>
+  <div class="timer-row" id="timerRow" style="display:none">
+    <div class="time" id="timeLeft">30s</div>
+    <div class="track"><div class="fill" id="timerFill"></div></div>
+    <div class="qrcode-note" id="qrNote"></div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <button class="primary" id="btnStart">开始投票</button>
+  <button class="ghost" id="btnEnd" disabled>提前结束</button>
+  <button class="danger" id="btnReveal" disabled>揭晓答案</button>
+  <button class="ghost" id="btnReset" disabled>重置</button>
+  <div class="mode-badge" id="modeBadge">模式检测中…</div>
+</div>
+
+<!-- ===== 揭晓层 ===== -->
+<div class="reveal" id="reveal">
+  <div class="stage" id="rs1">
+    <div class="small" style="letter-spacing:4px">全场投票结果</div>
+    <div class="dist" id="rs1Dist"></div>
+    <div class="mid" style="margin-top:32px">你们凭直觉,给它们<span class="gold">排了序</span>。</div>
+  </div>
+  <div class="stage" id="rs2">
+    <div class="big">但——</div>
+    <div class="mid" style="margin-top:20px">这不是一个<span class="gold">三选一</span>的问题。</div>
+  </div>
+  <div class="stage" id="rs3">
+    <div class="mid" style="margin-bottom:20px">刚才,每个人都被「反方观点」拆过台:</div>
+    <div class="retorts">
+      <div class="retort">选「教育」→ 教育见效太慢,卡脖子可等不了十年。</div>
+      <div class="retort">选「科技」→ 没有人才,谁来做突破?人才从哪来?</div>
+      <div class="retort">选「人才」→ 没有教育的底座,人才只是存量。</div>
+    </div>
+  </div>
+  <div class="stage" id="rs4">
+    <div class="big">教育 · 科技 · 人才</div>
+    <div class="mid" style="margin-top:18px">不是三个可排序的板块,</div>
+    <div class="mid">是<span class="gold">同一系统的三个侧面</span>。</div>
+    <div class="concl">
+      <div style="font-size:22px;line-height:1.8">教育生产人才 · 科技定义问题 · 人才反哺教育<br>
+      <b style="color:var(--seu-gold-soft)">一体推进 → 系统涌现 → 整体大于部分之和</b></div>
+      <div class="src">2026 年政府工作报告:「一体推进教育科技人才发展」· 二十届四中全会“十五五”规划建议</div>
+    </div>
+  </div>
+  <div class="stage" id="rs5">
+    <div class="big pulse">带着这个问题,<br>开始今天的汇报。</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CFG = window.VOTE_CONFIG;
+const CHOICES = ['edu','tech','talent'];
+const state = {
+  mode:'idle', live:false, demo:false,
+  counts:{edu:0, tech:0, talent:0},
+  total:0,
+  timers:[], demoInterval:null,
+};
+const $ = id => document.getElementById(id);
+
+/* ---------- 初始化 ---------- */
+async function init() {
+  const hasKey = CFG.supabaseUrl && CFG.supabaseAnonKey;
+  const needLive = CFG.mode === 'live' || (CFG.mode === 'auto' && hasKey);
+  if (needLive && hasKey) {
+    try {
+      const client = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { db: { schema: 'api' } });
+      const { error: probeErr } = await client.from(CFG.table).select('id').limit(1);
+      if (probeErr) throw probeErr;
+      state.live = true;
+      state.client = client;
+    } catch(e) {
+      console.warn('[stage] live init failed, fallback demo:', e);
+    }
+  }
+  state.demo = !state.live;
+  $('modeBadge').textContent = state.live ? '实时模式 · Supabase' : '演示模式 · 模拟数据';
+  renderQR();
+}
+
+/* ---------- 渲染 ---------- */
+function render() {
+  const t = state.total || 1;
+  for (const c of CHOICES) {
+    const n = state.counts[c];
+    $('num-'+c).textContent = n;
+    const pct = t ? Math.round(n/t*100) : 0;
+    $('pct-'+c).textContent = pct + '%';
+    // 用像素精确映射柱高(flex 布局下百分比高度不可靠)
+    const wrap = $('bar-'+c).parentElement;
+    const h = Math.max(4, Math.round(wrap.clientHeight * pct / 100));
+    $('bar-'+c).style.height = h + 'px';
+  }
+}
+
+/* ---------- 投票控制 ---------- */
+function startVoting() {
+  if (state.mode !== 'idle') return;
+  state.mode = 'voting';
+  setStatus('投票中 · 30秒', 'voting');
+  $('btnStart').disabled = true;
+  $('btnEnd').disabled = false;
+  $('btnReveal').disabled = true;
+  $('btnReset').disabled = false;
+  $('timerRow').style.display = 'flex';
+
+  if (state.live) {
+    // 初次拉取现有票数
+    state.client.from(CFG.table).select('choice').then(({data}) => {
+      if (data) { resetCounts(); data.forEach(r => state.counts[r.choice] = (state.counts[r.choice]||0)+1); state.total = data.length; render(); }
+    });
+    // 订阅实时插入
+    state.channel = state.client
+      .channel('votes-rt')
+      .on('postgres_changes', { event:'INSERT', schema:'api', table:CFG.table }, payload => {
+        const c = payload.new && payload.new.choice;
+        if (CHOICES.includes(c)) { state.counts[c]++; state.total++; render(); }
+      })
+      .subscribe();
+    // 轮询兜底:Realtime 万一不可用,3 秒内也能同步(现场可接受)
+    state.pollTimer = setInterval(async () => {
+      const { data } = await state.client.from(CFG.table).select('choice');
+      if (data) {
+        const fresh = {edu:0, tech:0, talent:0};
+        data.forEach(r => { if (CHOICES.includes(r.choice)) fresh[r.choice]++; });
+        state.counts = fresh; state.total = data.length; render();
+      }
+    }, 3000);
+  } else {
+    // 演示模式:模拟观众陆续投票(带直觉倾向,科技最多→人才→教育)
+    startDemoSim();
+  }
+  startCountdown();
+}
+
+function startDemoSim() {
+  const w = CFG.demoWeight;
+  const totalVotes = CFG.demoVoters;
+  let emitted = 0;
+  const tick = () => {
+    if (emitted >= totalVotes || state.mode !== 'voting') { clearInterval(state.demoInterval); return; }
+    // 按权重随机选择
+    const r = Math.random()*100;
+    let c = 'talent';
+    if (r < w.edu) c = 'edu';
+    else if (r < w.edu + w.tech) c = 'tech';
+    state.counts[c]++; state.total++; emitted++;
+    render();
+  };
+  state.demoInterval = setInterval(tick, 900 + Math.random()*700);
+}
+
+function startCountdown() {
+  let left = CFG.voteSeconds;
+  $('timeLeft').textContent = left + 's';
+  $('timerFill').style.width = '100%';
+  const step = () => {
+    left--;
+    if (left <= 0) { endVoting(); return; }
+    $('timeLeft').textContent = left + 's';
+    $('timerFill').style.width = (left/CFG.voteSeconds*100) + '%';
+    state.timers.push(setTimeout(step, 1000));
+  };
+  state.timers.push(setTimeout(step, 1000));
+}
+
+function endVoting() {
+  if (state.mode !== 'voting') return;
+  state.mode = 'ready';
+  setStatus('投票结束 · 揭晓?', 'idle');
+  clearAllTimers();
+  if (state.demoInterval) clearInterval(state.demoInterval);
+  if (state.pollTimer) clearInterval(state.pollTimer);
+  if (state.channel) state.client.removeChannel(state.channel);
+  $('btnStart').disabled = true;
+  $('btnEnd').disabled = true;
+  $('btnReveal').disabled = false;
+  $('timerRow').style.display = 'none';
+}
+
+function clearAllTimers() {
+  state.timers.forEach(t => clearTimeout(t));
+  state.timers = [];
+}
+
+/* ---------- 揭晓 ---------- */
+function reveal() {
+  if (state.mode !== 'ready') return;
+  state.mode = 'revealed';
+  const t = state.total || 1;
+  $('rs1Dist').innerHTML = CHOICES.map(c => {
+    const label = {edu:'🌱 教育', tech:'⚡ 科技', talent:'🧭 人才'}[c];
+    return `<div class="pill"><div class="n">${Math.round(state.counts[c]/t*100)}%</div><div class="l">${label}</div></div>`;
+  }).join('');
+  $('reveal').classList.add('show');
+  $('rs1').classList.add('on');
+  // 时间线
+  setTimeout(() => { $('rs1').classList.remove('on'); $('rs2').classList.add('on'); }, 3200);
+  setTimeout(() => { $('rs2').classList.remove('on'); $('rs3').classList.add('on'); }, 4800);
+  setTimeout(() => { $('rs3').classList.remove('on'); $('rs4').classList.add('on'); }, 7800);
+  setTimeout(() => { $('rs4').classList.remove('on'); $('rs5').classList.add('on'); }, 11200);
+  $('btnReveal').disabled = true;
+  $('btnReset').disabled = false;
+}
+
+function resetAll() {
+  state.mode = 'idle';
+  clearAllTimers();
+  resetCounts();
+  setStatus('等待开始', 'idle');
+  $('btnStart').disabled = false;
+  $('btnEnd').disabled = true;
+  $('btnReveal').disabled = true;
+  $('btnReset').disabled = true;
+  $('reveal').classList.remove('show');
+  for (let i=1;i<=5;i++) $('rs'+i).classList.remove('on');
+  render();
+}
+
+function resetCounts() { state.counts = {edu:0,tech:0,talent:0}; state.total = 0; }
+function setStatus(txt, cls) { const s=$('status'); s.textContent=txt; s.className='status ' + (cls||'idle'); }
+
+/* ---------- 二维码(部署后可用) ---------- */
+function renderQR() {
+  const note = $('qrNote');
+  const host = location.hostname;
+  if (host && host !== 'file') {
+    // 部署到 GitHub Pages 后,这里显示可扫码的投票链接
+    note.textContent = '扫码投票: ' + location.origin + location.pathname.replace(/stage\.html$/, 'index.html');
+  } else {
+    note.textContent = '本地预览模式 · 部署后可扫码';
+  }
+}
+
+/* ---------- 按钮绑定 ---------- */
+$('btnStart').addEventListener('click', startVoting);
+$('btnEnd').addEventListener('click', endVoting);
+$('btnReveal').addEventListener('click', reveal);
+$('btnReset').addEventListener('click', resetAll);
+
+init();
+</script>
+</body>
+</html>
