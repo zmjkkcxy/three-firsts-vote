@@ -3,6 +3,14 @@
 > 东南大学「教育、科技、人才三位一体」研读汇报 · 开场互动环节
 > 核心玩法:全场 30 秒投票,无论选哪个都被"反方观点"拆台,最后揭晓——这不是三选一,是系统涌现。
 
+## 已部署(2026-11-25)
+
+- **大屏页**: https://zmjkkcxy.github.io/three-firsts-vote/stage.html (讲台电脑打开,主讲人控制)
+- **手机投票页**: https://zmjkkcxy.github.io/three-firsts-vote/index.html (同学扫码/打开)
+- **实时模式已接通**: Supabase 项目 ephmmmbhiaeohawdqxls,表 `api.votes`,publishable key 已填入 config.js
+- 部署方式: GitHub Pages(仓库 zmjkkcxy/three-firsts-vote,Contents API 上传,直连/代理网络波动时用)
+- ⚠️ 汇报前务必用**手机流量**实测扫码;校园网打不开 GitHub Pages 时,讲台电脑本地打开 stage.html 走演示模式兜底
+
 ## 文件结构
 
 ```
