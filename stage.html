@@ -235,6 +235,7 @@ body{
   <button class="primary" id="btnStart">开始投票</button>
   <button class="ghost" id="btnEnd" disabled>提前结束</button>
   <button class="danger" id="btnReveal" disabled>揭晓答案</button>
+  <button class="ghost" id="btnClear">清空数据</button>
   <button class="ghost" id="btnReset" disabled>重置</button>
   <div class="mode-badge" id="modeBadge">模式检测中…</div>
 </div>
@@ -438,10 +439,24 @@ function resetAll() {
   $('btnStart').disabled = false;
   $('btnEnd').disabled = true;
   $('btnReveal').disabled = true;
+  $('btnClear').disabled = false;
   $('btnReset').disabled = true;
   $('reveal').classList.remove('show');
   for (let i=1;i<=5;i++) $('rs'+i).classList.remove('on');
   render();
+}
+
+/* ---------- 清空数据库(预检后开场前用) ---------- */
+async function clearData() {
+  if (!confirm('确定清空所有投票数据吗?')) return;
+  if (state.live && state.client) {
+    await state.client.from(CFG.table).delete().neq('id', 0);
+  }
+  clearAllTimers();
+  resetCounts();
+  render();
+  $('btnClear').disabled = true;
+  setStatus('数据已清空 · 等待开始', 'idle');
 }
 
 function resetCounts() { state.counts = {edu:0,tech:0,talent:0}; state.total = 0; }
@@ -470,6 +485,7 @@ function renderQR() {
 $('btnStart').addEventListener('click', startVoting);
 $('btnEnd').addEventListener('click', endVoting);
 $('btnReveal').addEventListener('click', reveal);
+$('btnClear').addEventListener('click', clearData);
 $('btnReset').addEventListener('click', resetAll);
 
 init();
